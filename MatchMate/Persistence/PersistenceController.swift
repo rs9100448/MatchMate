@@ -16,18 +16,42 @@ enum PersistenceController {
     static let schema = Schema([MatchProfile.self])
 
     /// Persistent, on-disk store used by the running app.
+    ///
+    /// If the existing store can't be opened — because it's corrupt or its schema
+    /// is incompatible (e.g. a model change that isn't a lightweight migration) —
+    /// we recover by discarding it and starting fresh rather than crashing. The
+    /// data here is API-backed and re-fetchable, so a reset is safe; the user's
+    /// decisions are the only local-only state, and losing them on an unreadable
+    /// store is far better than an unlaunchable app.
     static func makeContainer(inMemory: Bool = false) -> ModelContainer {
         let configuration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: inMemory
         )
+
         do {
             return try ModelContainer(for: schema, configurations: [configuration])
         } catch {
-            // A failure here means the on-disk store is corrupt or incompatible.
-            // In a shipping app we'd attempt a migration/rebuild; for this
-            // assignment a clear crash beats silently losing user data.
-            fatalError("Failed to create ModelContainer: \(error)")
+            guard !inMemory else {
+                fatalError("Failed to create in-memory ModelContainer: \(error)")
+            }
+
+            // Recover: remove the unreadable store and rebuild it.
+            deleteStore(at: configuration.url)
+            do {
+                return try ModelContainer(for: schema, configurations: [configuration])
+            } catch {
+                fatalError("Failed to create ModelContainer after reset: \(error)")
+            }
+        }
+    }
+
+    /// Removes the SQLite store and its write-ahead-log siblings.
+    private static func deleteStore(at url: URL) {
+        let fileManager = FileManager.default
+        for suffix in ["", "-shm", "-wal"] {
+            let file = URL(fileURLWithPath: url.path + suffix)
+            try? fileManager.removeItem(at: file)
         }
     }
 }

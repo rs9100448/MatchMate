@@ -172,6 +172,7 @@ Testability comes from the protocol boundaries: `ProfileAPI`, `HTTPClient`, `Net
 - **Image caching** beyond `AsyncImage`'s in-memory cache (e.g. a small disk cache) for smoother offline scrolling of previously seen photos.
 - **UI / snapshot tests** — current coverage is at the ViewModel/repository layer.
 - **Richer pagination end-state** — with a fixed seed the API is effectively infinite; a real backend would signal the last page.
+- **Versioned schema migration** — the store currently recovers from an incompatible/corrupt store by resetting it (safe here since data is API-backed). A production app would add a `SchemaMigrationPlan` to preserve decisions across model changes.
 - **Retry/backoff** policy on transient network failures.
 - **Localization** — strings are inline English; they'd move to a String Catalog.
 - **Accessibility polish** — basics are in place (labels on the status pill), but a full VoiceOver pass would help.
