@@ -35,7 +35,9 @@ struct MappingAndDetailTests {
         detailVM.setDecision(.declined)
         #expect(detailVM.decision == .declined)
 
-        detailVM.setDecision(.pending) // undo
+        // The data layer supports any transition, even though the UI keeps a
+        // decision final once made.
+        detailVM.setDecision(.pending)
         #expect(detailVM.decision == .pending)
 
         let reloaded = try env.repository.cachedProfiles()

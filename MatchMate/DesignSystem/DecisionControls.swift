@@ -22,8 +22,9 @@ struct DecisionStatusPill: View {
     }
 }
 
-/// Accept / Decline buttons. When a decision already exists, the status pill is
-/// shown instead — with a subtle "Undo" affordance back to pending.
+/// Accept / Decline buttons. Once a decision is made it's final, so the status
+/// pill replaces the buttons (matching the assignment's pending → Accepted /
+/// Declined flow).
 ///
 /// Reused verbatim by both the list card and the detail screen so the two can
 /// never drift apart visually or behaviorally.
@@ -59,10 +60,7 @@ struct DecisionActionBar: View {
         case .accepted, .declined:
             HStack {
                 DecisionStatusPill(decision: decision)
-                Spacer(minLength: Theme.Spacing.sm)
-                Button("Undo") { onDecision(.pending) }
-                    .font(.subheadline)
-                    .buttonStyle(.borderless)
+                Spacer(minLength: 0)
             }
         }
     }
