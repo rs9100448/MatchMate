@@ -7,10 +7,9 @@
 
 import SwiftUI
 
-/// A single match card, laid out like the reference design: a circular photo
-/// (medium-res so it stays crisp at avatar size), the name in the accent color,
-/// an "age, location" subtitle, and the Accept/Decline controls (which become a
-/// full-width status bar once decided).
+/// A single match card, laid out like the reference design: a large centered
+/// photo, the name in the accent color, an "age, location" subtitle, and the
+/// Accept/Decline controls (which become a full-width status bar once decided).
 ///
 /// Reads `profile` directly — since `MatchProfile` is an observable `@Model`,
 /// any decision change (made here or on the detail screen) re-renders this card
@@ -21,11 +20,10 @@ struct MatchCardView: View {
 
     var body: some View {
         VStack(spacing: Theme.Spacing.md) {
-            RemoteImage(url: profile.mediumImageURL)
-                .frame(width: 120, height: 120)
-                .clipShape(Circle())
-                .overlay(Circle().stroke(.quaternary, lineWidth: 1))
-                .padding(.top, Theme.Spacing.sm)
+            RemoteImage(url: profile.largeImageURL)
+                .frame(maxWidth: .infinity)
+                .frame(height: 220)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control))
 
             VStack(spacing: Theme.Spacing.xs) {
                 Text(profile.fullName)
