@@ -92,7 +92,7 @@ extension RandomUser {
             country: location.country,
             nationality: nat,
             registeredDate: RandomUser.iso8601.date(from: registered.date) ?? .now,
-            thumbnailURLString: picture.large,
+            mediumImageURLString: picture.medium,
             largeImageURLString: picture.large,
             decision: .pending,
             sortIndex: sortIndex

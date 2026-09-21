@@ -87,7 +87,7 @@ final class SwiftDataProfileRepository: ProfileRepository {
                 current.country = mapped.country
                 current.nationality = mapped.nationality
                 current.registeredDate = mapped.registeredDate
-                current.thumbnailURLString = mapped.thumbnailURLString
+                current.mediumImageURLString = mapped.mediumImageURLString
                 current.largeImageURLString = mapped.largeImageURLString
                 current.sortIndex = sortIndex
             } else {

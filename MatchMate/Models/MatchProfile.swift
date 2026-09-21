@@ -34,7 +34,7 @@ final class MatchProfile {
     var nationality: String
     var registeredDate: Date
 
-    var thumbnailURLString: String
+    var mediumImageURLString: String
     var largeImageURLString: String
 
     /// Backing store for `decision`. Persisted as a `String` for schema stability.
@@ -65,7 +65,7 @@ final class MatchProfile {
         country: String,
         nationality: String,
         registeredDate: Date,
-        thumbnailURLString: String,
+        mediumImageURLString: String,
         largeImageURLString: String,
         decision: MatchDecision = .pending,
         sortIndex: Int = 0,
@@ -84,7 +84,7 @@ final class MatchProfile {
         self.country = country
         self.nationality = nationality
         self.registeredDate = registeredDate
-        self.thumbnailURLString = thumbnailURLString
+        self.mediumImageURLString = mediumImageURLString
         self.largeImageURLString = largeImageURLString
         self.decisionRaw = decision.rawValue
         self.sortIndex = sortIndex
@@ -105,6 +105,6 @@ extension MatchProfile {
             .joined(separator: ", ")
     }
 
-    var thumbnailURL: URL? { URL(string: thumbnailURLString) }
+    var mediumImageURL: URL? { URL(string: mediumImageURLString) }
     var largeImageURL: URL? { URL(string: largeImageURLString) }
 }
