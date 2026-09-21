@@ -21,7 +21,7 @@ struct MatchListView: View {
     var body: some View {
         NavigationStack {
             content
-                .navigationTitle("MatchMate")
+                .navigationTitle("Profile Matches")
                 .navigationDestination(for: MatchProfile.self) { profile in
                     MatchDetailView(
                         viewModel: dependencies.makeMatchDetailViewModel(for: profile)
