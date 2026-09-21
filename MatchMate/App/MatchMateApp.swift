@@ -1,0 +1,17 @@
+import SwiftUI
+import SwiftData
+
+@main
+struct MatchMateApp: App {
+    /// Built once and owned by the app. Everything downstream is injected from it.
+    @State private var dependencies = AppDependencies()
+
+    var body: some Scene {
+        WindowGroup {
+            MatchListView(viewModel: dependencies.makeMatchListViewModel())
+                .environment(dependencies)
+                .environment(dependencies.networkMonitor)
+        }
+        .modelContainer(dependencies.container)
+    }
+}
