@@ -1,3 +1,10 @@
+//
+//  AppError.swift
+//  MatchMate
+//
+//  Created by Ravindra on 21/09/26.
+//
+
 import Foundation
 
 /// A single, user-facing error type the whole app can present.

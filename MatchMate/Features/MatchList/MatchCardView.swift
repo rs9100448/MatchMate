@@ -1,3 +1,10 @@
+//
+//  MatchCardView.swift
+//  MatchMate
+//
+//  Created by Ravindra on 21/09/26.
+//
+
 import SwiftUI
 
 /// A single match card. Reads `profile` directly — since `MatchProfile` is an

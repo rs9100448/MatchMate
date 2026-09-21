@@ -1,3 +1,10 @@
+//
+//  RandomUserDTO.swift
+//  MatchMate
+//
+//  Created by Ravindra on 21/09/26.
+//
+
 import Foundation
 
 /// Wire model for `https://randomuser.me/api`.

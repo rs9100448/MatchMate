@@ -1,3 +1,10 @@
+//
+//  MatchListView.swift
+//  MatchMate
+//
+//  Created by Ravindra on 21/09/26.
+//
+
 import SwiftUI
 
 /// The match list screen: cards, pagination, offline banner, and error handling.

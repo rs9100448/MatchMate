@@ -1,3 +1,10 @@
+//
+//  RemoteImage.swift
+//  MatchMate
+//
+//  Created by Ravindra on 21/09/26.
+//
+
 import SwiftUI
 
 /// Thin wrapper over `AsyncImage` with a consistent placeholder and failure

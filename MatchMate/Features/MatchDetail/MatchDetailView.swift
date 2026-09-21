@@ -1,3 +1,10 @@
+//
+//  MatchDetailView.swift
+//  MatchMate
+//
+//  Created by Ravindra on 21/09/26.
+//
+
 import SwiftUI
 
 /// Full profile screen. Accept/Decline here writes to the DB and updates this
