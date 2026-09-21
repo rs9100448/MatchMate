@@ -58,6 +58,29 @@ Every dependency is injected through a protocol, so each layer is replaceable an
 
 ---
 
+## Architecture decisions & trade-offs
+
+The brief asks for **"MVVM + repository (or similar)"**, and that's exactly what this is. I considered full **Clean Architecture** (pure domain entities, a Use Case/Interactor layer, and separate Domain/Data/Presentation modules) and consciously chose *not* to adopt all of its ceremony for an app this size. This section documents that decision so the choice reads as deliberate, not accidental.
+
+**What this design borrows from Clean Architecture (the principles that matter):**
+
+- **The Dependency Rule via inversion.** Every boundary is a protocol (`ProfileRepository`, `ProfileAPI`, `HTTPClient`, `NetworkMonitoring`); inner layers depend on abstractions, and concrete frameworks (`URLSession`, `ModelContext`) are injected from a single composition root. Nothing UI-facing imports a networking or persistence framework.
+- **Separation of concerns** across Presentation → ViewModel → Repository → Data.
+- **Wire/domain separation** — API DTOs are decoupled from the app model and mapped in one place.
+- **Testability first** — the reason those boundaries exist at all.
+
+**Where it intentionally stops short of *strict* Clean Architecture, and why:**
+
+1. **No separate Use Case layer.** The ViewModels talk to the repository directly. For two screens, use cases like `LoadMatchesUseCase` / `SetDecisionUseCase` would be near-empty pass-throughs — indirection without payoff. I'd add them the moment business rules grew beyond "fetch a page" and "set a flag."
+2. **The domain model is a SwiftData `@Model`, not a framework-free `struct`.** This is the one real deviation from Clean Architecture's "entities depend on nothing" rule, and it's a *feature*, not an oversight: because a `@Model` is a reference type that's `Observable`, the list and detail screens share **one instance**, so the "list and detail never disagree, no manual refresh" requirement falls out for free. A purist version would use pure structs + a persistence model + mappers, and then reintroduce cross-screen sync manually through a shared observable store. That's more layers and more moving parts to reproduce behaviour I already get natively — a poor trade at this scale.
+3. **One module, folder-separated, not multiple SPM targets.** The layering is enforced by discipline and protocols rather than module boundaries. Splitting into `Domain` / `Data` / `Presentation` packages is a mechanical follow-up if the codebase grows.
+
+**When I *would* go stricter:** multiple feature teams touching the same layers, business logic complex enough to warrant use cases, a second data source or a domain that must outlive the persistence framework, or a hard requirement to compile the domain without UIKit/SwiftData. None of those apply to a two-screen assignment, so the extra structure would read as over-engineering rather than cleanliness.
+
+In short: this is a **pragmatic, principle-driven MVVM + Repository** — Clean Architecture's *dependency discipline* without its *module ceremony* — sized to the problem.
+
+---
+
 ## Database choice: **SwiftData** (and why)
 
 I chose **SwiftData** over Core Data:
