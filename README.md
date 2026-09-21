@@ -114,6 +114,26 @@ This is the core of the assignment, so it's worth being explicit.
 - **Upsert preserves decisions.** When a page is re-fetched (refresh, or re-encountering a profile), `SwiftDataProfileRepository.upsert` updates the mutable fields but **never overwrites `decision`**. This is covered by a dedicated test.
 - **Survives relaunch.** Decisions are persisted to the on-disk SwiftData store, so they're still there after an app kill.
 
+## Screen state (state machine)
+
+The list screen is driven by a single explicit state value rather than a spread of booleans:
+
+```swift
+enum MatchListState {
+    case idle
+    case loading                       // first load, nothing to show yet
+    case loaded([MatchProfile])        // content on screen, settled
+    case paginating([MatchProfile])    // content on screen, fetching next page
+    case empty                         // finished, nothing to show
+    case failed(message:, cached:)     // error; cached content shown behind a banner if present
+}
+```
+
+- The **ViewModel** is the only thing that transitions the state; the **View** just switches over it and renders the matching branch. Illegal combinations (e.g. "loading *and* error *and* empty") are unrepresentable.
+- `failed` carries the `cached` profiles so a failure never blanks the list — with content it shows an inline banner, without content it shows a full-screen error+retry.
+- `profiles` and `errorMessage` remain as thin derived accessors off the state, so views and tests read them directly.
+- The detail screen has no async load phases (it just renders a profile and writes decisions), so it intentionally has no state enum — adding one would be a single-case type.
+
 ## Offline behavior
 
 - **Offline-first load:** the list renders cached profiles immediately from SwiftData, *then* refreshes from the network when connectivity allows.

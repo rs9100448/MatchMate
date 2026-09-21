@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-/// The match list screen: cards, pagination, offline banner, and error handling.
+/// The match list screen. It's a thin projection of `viewModel.state`: it reads
+/// the state machine and renders the matching branch — no local flags of its own.
 struct MatchListView: View {
     @State private var viewModel: MatchListViewModel
     @Environment(AppDependencies.self) private var dependencies
@@ -35,23 +36,34 @@ struct MatchListView: View {
         }
     }
 
-    // MARK: - Content states
+    // MARK: - Content (driven entirely by state)
 
     @ViewBuilder
     private var content: some View {
-        if viewModel.isLoadingInitial && viewModel.profiles.isEmpty {
+        switch viewModel.state {
+        case .idle, .loading:
             ProgressView("Finding matches…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if viewModel.profiles.isEmpty {
+
+        case .empty:
             emptyState
-        } else {
-            list
+
+        case let .loaded(profiles), let .paginating(profiles):
+            list(profiles, isPaginating: viewModel.state.isPaginating)
+
+        case let .failed(message, cached):
+            if cached.isEmpty {
+                errorState(message)
+            } else {
+                // Error with content behind it → show the list; the banner explains.
+                list(cached, isPaginating: false)
+            }
         }
     }
 
-    private var list: some View {
+    private func list(_ profiles: [MatchProfile], isPaginating: Bool) -> some View {
         List {
-            ForEach(viewModel.profiles) { profile in
+            ForEach(profiles) { profile in
                 NavigationLink(value: profile) {
                     MatchCardView(profile: profile) { decision in
                         viewModel.setDecision(decision, for: profile)
@@ -66,7 +78,7 @@ struct MatchListView: View {
                 }
             }
 
-            if viewModel.isLoadingNextPage {
+            if isPaginating {
                 HStack {
                     Spacer()
                     ProgressView()
@@ -96,6 +108,19 @@ struct MatchListView: View {
         }
     }
 
+    private func errorState(_ message: String) -> some View {
+        ContentUnavailableView {
+            Label("Couldn't load matches", systemImage: "exclamationmark.triangle")
+        } description: {
+            Text(message)
+        } actions: {
+            Button("Try again") {
+                Task { await viewModel.loadFirstPage() }
+            }
+            .buttonStyle(.borderedProminent)
+        }
+    }
+
     // MARK: - Banners
 
     @ViewBuilder
@@ -108,7 +133,9 @@ struct MatchListView: View {
                     tint: .orange
                 )
             }
-            if let message = viewModel.errorMessage {
+            // Only show the inline error banner when there's content behind it;
+            // a content-less failure is handled by the full-screen error state.
+            if case let .failed(message, cached) = viewModel.state, !cached.isEmpty {
                 BannerView(text: message, systemImage: "exclamationmark.triangle.fill", tint: .red) {
                     viewModel.dismissError()
                 }
