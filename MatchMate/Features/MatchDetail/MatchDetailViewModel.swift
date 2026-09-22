@@ -8,11 +8,15 @@
 import Foundation
 import Observation
 
-/// Drives the detail screen. It holds the *same* `MatchProfile` instance the list
-/// shows, so decisions made here are reflected on the list card automatically
-/// when the user navigates back — no reload, no notification plumbing.
 @MainActor
-@Observable
+protocol MatchDetailViewModeling: Observable, AnyObject {
+    var profile: MatchProfile { get }
+    var decision: MatchDecision { get }
+    var errorMessage: String? { get }
+    func setDecision(_ decision: MatchDecision)
+    func dismissError()
+}
+
 final class MatchDetailViewModel: MatchDetailViewModeling {
     let profile: MatchProfile
     var errorMessage: String?

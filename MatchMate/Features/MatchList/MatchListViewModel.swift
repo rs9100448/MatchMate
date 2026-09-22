@@ -9,7 +9,20 @@ import Foundation
 import Observation
 
 @MainActor
-@Observable
+protocol MatchListViewModeling: Observable, AnyObject {
+    var state: MatchListState { get }
+    var profiles: [MatchProfile] { get }
+    var errorMessage: String? { get }
+
+    func onAppear() async
+    func loadFirstPage() async
+    func refresh() async
+    func loadNextPageIfNeeded(currentItem: MatchProfile) async
+    func loadNextPage() async
+    func setDecision(_ decision: MatchDecision, for profile: MatchProfile)
+    func dismissError()
+}
+
 final class MatchListViewModel: MatchListViewModeling {
     // MARK: - State
     private(set) var state: MatchListState = .idle
@@ -121,25 +134,24 @@ final class MatchListViewModel: MatchListViewModeling {
         // Run the fetch in an unstructured task so it is NOT tied to the caller's
         // cancellation. The trigger comes from a list row's `.task`, which SwiftUI
         // cancels the moment that row scrolls off screen; without this, a quick
-        // scroll would abort the in-flight page load. We still `await` the result,
-        // so callers (and tests) observe it through to completion.
-        let outcome = await Task { () -> Result<[MatchProfile], Error> in
+        // scroll would abort the in-flight page load. We still `await` it, so
+        // callers (and tests) observe it through to completion.
+        //
+        // The task inherits this @MainActor context and does the state update
+        // itself, returning `Void`. That keeps the non-Sendable `[MatchProfile]`
+        // entirely inside the actor — nothing crosses the `.value` boundary, so
+        // there's no Sendable warning (`PersistentModel` isn't Sendable).
+        await Task {
             do {
-                return .success(try await repository.fetchAndStore(page: nextPage, pageSize: pageSize))
+                let merged = try await repository.fetchAndStore(page: nextPage, pageSize: pageSize)
+                currentPage = nextPage
+                // If the page brought nothing new, stop paginating.
+                canLoadMore = merged.count > previousCount
+                state = merged.isEmpty ? .empty : .loaded(merged)
             } catch {
-                return .failure(error)
+                transitionToFailure(error)
             }
         }.value
-
-        switch outcome {
-        case .success(let merged):
-            currentPage = nextPage
-            // If the page brought nothing new, stop paginating.
-            canLoadMore = merged.count > previousCount
-            state = merged.isEmpty ? .empty : .loaded(merged)
-        case .failure(let error):
-            transitionToFailure(error)
-        }
     }
 
     // MARK: - Decisions

@@ -7,16 +7,7 @@
 
 import Foundation
 
-/// Fetches pages of profiles from the remote API.
-///
-/// The repository depends on this protocol (not the concrete type) so it can be
-/// swapped for a stub in tests.
 protocol ProfileAPI: Sendable {
-    /// Fetches a single page of results.
-    /// - Parameters:
-    ///   - page: 1-based page index.
-    ///   - pageSize: Number of results per page.
-    /// - Returns: Decoded API users in server order.
     func fetchProfiles(page: Int, pageSize: Int) async throws -> [RandomUser]
 }
 

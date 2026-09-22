@@ -18,20 +18,12 @@ import SwiftData
 /// returns live `@Model` objects that the SwiftUI views bind to directly.
 @MainActor
 protocol ProfileRepository: AnyObject {
-    /// All cached profiles in paging order (offline-first read).
     func cachedProfiles() throws -> [MatchProfile]
-
-    /// Fetches `page` from the API and upserts it into the store, preserving any
-    /// existing decision. Returns the freshly merged, ordered list.
     @discardableResult
     func fetchAndStore(page: Int, pageSize: Int) async throws -> [MatchProfile]
-
-    /// Persists a decision for a profile. The mutation is visible immediately to
-    /// every view holding the same `@Model` instance.
     func setDecision(_ decision: MatchDecision, for profile: MatchProfile) throws
 }
 
-/// SwiftData-backed implementation.
 final class SwiftDataProfileRepository: ProfileRepository {
     private let context: ModelContext
     private let api: ProfileAPI
@@ -63,8 +55,6 @@ final class SwiftDataProfileRepository: ProfileRepository {
         return try cachedProfiles()
     }
 
-    /// Inserts new profiles and updates existing ones **without** overwriting the
-    /// saved decision — the single most important rule for status consistency.
     private func upsert(_ users: [RandomUser], page: Int, pageSize: Int) throws {
         let incomingIDs = users.map(\.login.uuid)
         let existing = try fetchExisting(ids: incomingIDs)

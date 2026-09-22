@@ -100,7 +100,11 @@ extension RandomUser {
     }
 
     /// randomuser.me returns registration dates as ISO-8601 with fractional seconds.
-    static let iso8601: ISO8601DateFormatter = {
+    ///
+    /// `nonisolated(unsafe)` because `ISO8601DateFormatter` isn't `Sendable`, but
+    /// this instance is configured once and then only ever read from (`date(from:)`
+    /// is safe for concurrent parsing), so sharing it is sound.
+    nonisolated(unsafe) static let iso8601: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter
