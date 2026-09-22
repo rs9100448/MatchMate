@@ -139,6 +139,7 @@ enum MatchListState {
 - **Offline-first load:** the list renders cached profiles immediately from SwiftData, *then* refreshes from the network when connectivity allows.
 - `NetworkMonitor` (`NWPathMonitor`) drives an offline banner and prevents pointless network attempts while disconnected.
 - **Accept/Decline works fully offline** — it's just a local DB write. Your decisions persist and will be there next launch.
+- **Photos are cached too** — a two-tier `ImageCache` (`NSCache` in memory + a small disk cache keyed by a SHA-256 of the URL) means previously seen images render offline and scroll without flicker, not just the text data.
 - If there's no cache *and* no connectivity, a clear empty state explains why.
 
 ## Error handling
@@ -169,7 +170,7 @@ Testability comes from the protocol boundaries: `ProfileAPI`, `HTTPClient`, `Net
 
 ## Known gaps / things I'd add with more time
 
-- **Image caching** beyond `AsyncImage`'s in-memory cache (e.g. a small disk cache) for smoother offline scrolling of previously seen photos.
+- **Image cache eviction policy** — photos use a two-tier cache (`NSCache` in memory + a small on-disk cache). The memory tier evicts under pressure automatically; the disk tier isn't size-capped or aged out yet, so a production app would add an LRU/trim policy.
 - **UI / snapshot tests** — current coverage is at the ViewModel/repository layer.
 - **Richer pagination end-state** — with a fixed seed the API is effectively infinite; a real backend would signal the last page.
 - **Versioned schema migration** — the store currently recovers from an incompatible/corrupt store by resetting it (safe here since data is API-backed). A production app would add a `SchemaMigrationPlan` to preserve decisions across model changes.

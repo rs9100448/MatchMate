@@ -55,7 +55,6 @@ struct MatchListView: View {
             if cached.isEmpty {
                 errorState(message)
             } else {
-                // Error with content behind it → show the list; the banner explains.
                 list(cached, isPaginating: false)
             }
         }
