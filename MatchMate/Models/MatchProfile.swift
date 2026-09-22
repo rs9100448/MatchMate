@@ -105,6 +105,13 @@ extension MatchProfile {
             .joined(separator: ", ")
     }
 
+    /// Compact "City, Country" used on the list card.
+    var cityCountry: String {
+        [city, country]
+            .filter { !$0.isEmpty }
+            .joined(separator: ", ")
+    }
+
     var mediumImageURL: URL? { URL(string: mediumImageURLString) }
     var largeImageURL: URL? { URL(string: largeImageURLString) }
 }

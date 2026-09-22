@@ -7,45 +7,47 @@
 
 import SwiftUI
 
-/// A single match card, laid out like the reference design: a large centered
-/// photo, the name in the accent color, an "age, location" subtitle, and the
-/// Accept/Decline controls (which become a full-width status bar once decided).
+/// A single match card: a rounded photo on the left, name / age / location on the
+/// right, and the Accept/Decline controls below (which become a full-width status
+/// bar once decided).
 ///
-/// Reads `profile` directly — since `MatchProfile` is an observable `@Model`,
-/// any decision change (made here or on the detail screen) re-renders this card
+/// Reads `profile` directly — since `MatchProfile` is an observable `@Model`, any
+/// decision change (made here or on the detail screen) re-renders this card
 /// automatically.
 struct MatchCardView: View {
     let profile: MatchProfile
     let onDecision: (MatchDecision) -> Void
 
     var body: some View {
-        VStack(spacing: Theme.Spacing.md) {
-            RemoteImage(url: profile.largeImageURL)
-                .frame(maxWidth: .infinity)
-                .frame(height: 220)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control))
+        VStack(spacing: Theme.Spacing.lg) {
+            HStack(spacing: Theme.Spacing.md) {
+                RemoteImage(url: profile.largeImageURL)
+                    .frame(width: 92, height: 92)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
-            VStack(spacing: Theme.Spacing.xs) {
-                Text(profile.fullName)
-                    .font(.title3.bold())
-                    .foregroundStyle(.tint)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(1)
-                Text("\(profile.age), \(profile.location)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    Text(profile.fullName)
+                        .font(.title3.bold())
+                        .lineLimit(1)
+
+                    Text("\(profile.age) years old")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    Label(profile.cityCountry, systemImage: "mappin.and.ellipse")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             DecisionActionBar(decision: profile.decision, onDecision: onDecision)
-                .padding(.top, Theme.Spacing.xs)
         }
         .padding(Theme.Spacing.lg)
-        .background(.background, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.card)
-                .stroke(.quaternary, lineWidth: 1)
+        .background(
+            Color(.secondarySystemBackground),
+            in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
         )
         .contentShape(Rectangle())
     }

@@ -8,26 +8,16 @@
 import Foundation
 import Observation
 
-/// Drives the match list: offline-first loading, real pagination, decisions, and
-/// error surfacing. Deliberately UI-free so it can be unit-tested in isolation.
-///
-/// All display state is funneled through a single `MatchListState` value, so the
-/// screen is a genuine state machine rather than a bag of booleans.
 @MainActor
 @Observable
 final class MatchListViewModel {
     // MARK: - State
-
-    /// The single source of truth for what the screen shows. Only the ViewModel
-    /// transitions it; the View only reads it.
     private(set) var state: MatchListState = .idle
 
-    // Derived, read-only conveniences (used by the View and tests).
     var profiles: [MatchProfile] { state.profiles }
     var errorMessage: String? { state.errorMessage }
 
     // MARK: - Dependencies
-
     private let repository: ProfileRepository
     private let networkMonitor: NetworkMonitoring
     private let pageSize: Int
@@ -51,8 +41,6 @@ final class MatchListViewModel {
 
     // MARK: - Loading
 
-    /// Called when the list first appears. Shows cache instantly, then refreshes
-    /// page 1 from the network when possible.
     func onAppear() async {
         guard case .idle = state else { return }
         loadFromCache()

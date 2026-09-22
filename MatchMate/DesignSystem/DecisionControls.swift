@@ -7,26 +7,27 @@
 
 import SwiftUI
 
-/// A full-width status bar shown once a decision is made — a clear text label
-/// ("Accepted" / "Declined"), matching the reference design's "After Accept" /
-/// "After Decline" states. Deliberately text, not an icon.
+/// A full-width status bar shown once a decision is made — a clear labelled state
+/// ("Accepted" / "Declined") on a soft tinted background, matching the reference
+/// design's "After Accept / After Decline" states.
 struct DecisionStatusBar: View {
     let decision: MatchDecision
 
     var body: some View {
-        Text(decision.title)
-            .font(.headline)
-            .foregroundStyle(.white)
+        Label(decision.title, systemImage: decision.systemImage)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(decision.tint)
             .frame(maxWidth: .infinity)
             .padding(.vertical, Theme.Spacing.md)
-            .background(decision.tint, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+            .background(decision.tint.opacity(0.15),
+                        in: RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous))
             .accessibilityLabel("Status: \(decision.title)")
     }
 }
 
-/// Accept / Decline controls. Pending shows two labelled text buttons; once a
-/// decision is made it's final and the buttons are replaced by a full-width
-/// text status bar (never an icon).
+/// Accept / Decline controls. Pending shows two labelled buttons — a neutral
+/// "Decline" and an accent-filled "Accept" — and once a decision is made it's
+/// final, replaced by the full-width status bar.
 ///
 /// Reused verbatim by both the list card and the detail screen so the two can
 /// never drift apart visually or behaviorally.
@@ -42,20 +43,23 @@ struct DecisionActionBar: View {
                 Button {
                     onDecision(.declined)
                 } label: {
-                    Text("Decline").frame(maxWidth: .infinity)
+                    Label("Decline", systemImage: "xmark")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
-                .tint(Theme.Colors.declined)
+                .tint(.gray)
 
                 Button {
                     onDecision(.accepted)
                 } label: {
-                    Text("Accept").frame(maxWidth: .infinity)
+                    Label("Accept", systemImage: "heart.fill")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(Theme.Colors.accepted)
             }
-            .controlSize(prominent ? .large : .regular)
+            .controlSize(.large)
 
         case .accepted, .declined:
             DecisionStatusBar(decision: decision)
