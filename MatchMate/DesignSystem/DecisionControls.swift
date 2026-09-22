@@ -56,6 +56,7 @@ struct DecisionActionBar: View {
                     Label("Accept", systemImage: "heart.fill")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
+                        .foregroundStyle(.white)
                 }
                 .buttonStyle(.borderedProminent)
             }

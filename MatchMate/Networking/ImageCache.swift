@@ -25,7 +25,6 @@ final class ImageCache: @unchecked Sendable {
         let caches = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         directory = caches.appendingPathComponent("MatchMateImageCache", isDirectory: true)
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-
         memory.countLimit = 300
         memory.totalCostLimit = 60 * 1024 * 1024 // ~60 MB of decoded images
     }
@@ -49,8 +48,6 @@ final class ImageCache: @unchecked Sendable {
         return image
     }
 
-    /// Stores into both tiers. The disk write is dispatched off-caller so it never
-    /// blocks image display.
     func store(_ image: UIImage, data: Data, for url: URL) {
         memory.setObject(image, forKey: url as NSURL, cost: data.count)
         let fileURL = diskURL(for: url)
@@ -59,8 +56,6 @@ final class ImageCache: @unchecked Sendable {
         }
     }
 
-    /// Stable, filesystem-safe filename derived from the URL (SHA-256 → hex).
-    /// `hashValue` is deliberately avoided because it isn't stable across launches.
     private func diskURL(for url: URL) -> URL {
         let digest = SHA256.hash(data: Data(url.absoluteString.utf8))
         let name = digest.map { String(format: "%02x", $0) }.joined()

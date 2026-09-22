@@ -9,12 +9,12 @@ import SwiftUI
 
 /// The match list screen. It's a thin projection of `viewModel.state`: it reads
 /// the state machine and renders the matching branch — no local flags of its own.
-struct MatchListView: View {
-    @State private var viewModel: MatchListViewModel
+struct MatchListView<ViewModel: MatchListViewModeling>: View {
+    @State private var viewModel: ViewModel
     @Environment(AppDependencies.self) private var dependencies
     @Environment(NetworkMonitor.self) private var networkMonitor
 
-    init(viewModel: MatchListViewModel) {
+    init(viewModel: ViewModel) {
         _viewModel = State(initialValue: viewModel)
     }
 

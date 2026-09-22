@@ -10,10 +10,10 @@ import SwiftUI
 /// Full profile screen. Accept/Decline here writes to the DB and updates this
 /// screen instantly; the list card reflects the same status on back because both
 /// read the same `MatchProfile` object.
-struct MatchDetailView: View {
-    @State private var viewModel: MatchDetailViewModel
+struct MatchDetailView<ViewModel: MatchDetailViewModeling>: View {
+    @State private var viewModel: ViewModel
 
-    init(viewModel: MatchDetailViewModel) {
+    init(viewModel: ViewModel) {
         _viewModel = State(initialValue: viewModel)
     }
 

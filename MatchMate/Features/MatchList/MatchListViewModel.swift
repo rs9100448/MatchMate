@@ -10,7 +10,7 @@ import Observation
 
 @MainActor
 @Observable
-final class MatchListViewModel {
+final class MatchListViewModel: MatchListViewModeling {
     // MARK: - State
     private(set) var state: MatchListState = .idle
 
@@ -68,8 +68,6 @@ final class MatchListViewModel {
             if cached.isEmpty {
                 state = .failed(message: AppError.offline.errorDescription ?? "", cached: [])
             }
-            // With cached content, staying on `.loaded` + the offline banner is the
-            // right UX — being offline isn't an error when we have data to show.
             return
         }
 

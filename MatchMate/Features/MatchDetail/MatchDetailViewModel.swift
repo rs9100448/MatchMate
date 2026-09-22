@@ -13,7 +13,7 @@ import Observation
 /// when the user navigates back — no reload, no notification plumbing.
 @MainActor
 @Observable
-final class MatchDetailViewModel {
+final class MatchDetailViewModel: MatchDetailViewModeling {
     let profile: MatchProfile
     var errorMessage: String?
 
