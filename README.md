@@ -98,8 +98,8 @@ Core Data would also have worked; SwiftData simply removes ceremony and pairs na
 
 - Real pagination against the API's `page` parameter: `?page=N&results=10&seed=matchmate`.
 - The seed is fixed to `matchmate` so results stay stable across a review session.
-- **Infinite scroll:** each row calls `loadNextPageIfNeeded(currentItem:)` as it appears. When the visible row is within 3 of the end, the ViewModel fetches the next page. A `isLoadingNextPage` guard prevents duplicate/concurrent fetches, and `canLoadMore` stops paging when a page returns nothing new.
-- **Pull-to-refresh** re-fetches page 1 and resets the paging cursor.
+- **Infinite scroll:** each row calls `loadNextPageIfNeeded(currentItem:)` as it appears. When the visible row is within 3 of the end, the ViewModel fetches the next page. The `.paginating` state guards against duplicate/concurrent fetches, and `canLoadMore` stops paging when a page returns nothing new. The fetch runs in an unstructured task, so a row scrolling off-screen (which cancels its `.task`) can't abort an in-flight page load.
+- **The next page is derived from how many items are already loaded**, not a separate counter. Pull-to-refresh re-fetches page 1 and merges it into the store, so it can't desync pagination or stall it.
 - Newly fetched pages are **merged** into the store (upsert by id), never blindly replaced — so scrolling never wipes a decision you already made.
 
 ## How status sync works (one source of truth)
@@ -107,7 +107,7 @@ Core Data would also have worked; SwiftData simply removes ceremony and pairs na
 This is the core of the assignment, so it's worth being explicit.
 
 - **`login.uuid` is the stable profile id** and the SwiftData `@Attribute(.unique)` key. The same person is always the same row, across pages and refreshes.
-- **One object, two screens.** The list fetches `[MatchProfile]` (live `@Model` objects). Tapping a card pushes the detail screen with the **same instance** (SwiftUI value-based navigation carries the object, not a copy).
+- **One object, two screens.** The list fetches `[MatchProfile]` (live `@Model` objects). Tapping a card pushes the detail screen with the **same instance** via a programmatic `NavigationStack(path:)` — the path holds the `@Model` object, not a copy.
 - **Accept/Decline writes through the repository** → mutates `profile.decision` → `context.save()`. Because `MatchProfile` is `Observable` and both screens read that one object:
   - Action on **detail** updates the detail UI immediately, and the list card already shows the new status when you navigate back — **no manual refresh, no notifications, no re-fetch.**
   - Action on the **list** updates that card in place.
@@ -160,6 +160,9 @@ Unit tests target the ViewModels and the real repository (in-memory SwiftData), 
 - Accept persists and survives a reload from the store.
 - **Re-fetch preserves an existing decision** (upsert never clobbers status).
 - **List and detail share one source of truth** (a decision on detail is visible through the list VM's object).
+- **Pagination keeps working after a pull-to-refresh** (a regression test for the "paging stalls after refresh" case).
+- Pagination guards: no-op while offline, stops when a page adds nothing new, and coalesces concurrent calls.
+- **Detail view model** has its own suite: writes decisions, surfaces a repository error, and clears it on dismiss.
 - Offline: empty cache surfaces an offline message and never hits the network; a warm cache shows without error; Accept/Decline still works.
 - API failure surfaces an error message; dismiss clears it.
 - DTO → domain mapping and `AppError` mapping.
