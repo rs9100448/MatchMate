@@ -118,13 +118,26 @@ final class MatchListViewModel: MatchListViewModeling {
         let previousCount = current.count
         let nextPage = currentPage + 1
 
-        do {
-            let merged = try await repository.fetchAndStore(page: nextPage, pageSize: pageSize)
+        // Run the fetch in an unstructured task so it is NOT tied to the caller's
+        // cancellation. The trigger comes from a list row's `.task`, which SwiftUI
+        // cancels the moment that row scrolls off screen; without this, a quick
+        // scroll would abort the in-flight page load. We still `await` the result,
+        // so callers (and tests) observe it through to completion.
+        let outcome = await Task { () -> Result<[MatchProfile], Error> in
+            do {
+                return .success(try await repository.fetchAndStore(page: nextPage, pageSize: pageSize))
+            } catch {
+                return .failure(error)
+            }
+        }.value
+
+        switch outcome {
+        case .success(let merged):
             currentPage = nextPage
             // If the page brought nothing new, stop paginating.
             canLoadMore = merged.count > previousCount
             state = merged.isEmpty ? .empty : .loaded(merged)
-        } catch {
+        case .failure(let error):
             transitionToFailure(error)
         }
     }

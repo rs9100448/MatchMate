@@ -31,12 +31,16 @@ final class AppDependencies {
     }
 
     /// Factory for the list screen's ViewModel.
-    func makeMatchListViewModel() -> MatchListViewModel {
+    ///
+    /// Returns `some` (an opaque type) rather than `any`: callers get the
+    /// abstraction, but the underlying concrete type is preserved so the generic
+    /// view can bind to it and SwiftUI observation keeps working.
+    func makeMatchListViewModel() -> some MatchListViewModeling {
         MatchListViewModel(repository: repository, networkMonitor: networkMonitor)
     }
 
     /// Factory for the detail screen's ViewModel.
-    func makeMatchDetailViewModel(for profile: MatchProfile) -> MatchDetailViewModel {
+    func makeMatchDetailViewModel(for profile: MatchProfile) -> some MatchDetailViewModeling {
         MatchDetailViewModel(profile: profile, repository: repository)
     }
 }
