@@ -17,6 +17,7 @@ protocol MatchDetailViewModeling: Observable, AnyObject {
     func dismissError()
 }
 
+@Observable
 final class MatchDetailViewModel: MatchDetailViewModeling {
     let profile: MatchProfile
     var errorMessage: String?

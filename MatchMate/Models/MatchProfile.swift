@@ -8,17 +8,8 @@
 import Foundation
 import SwiftData
 
-/// The single source of truth for a match profile.
-///
-/// This is a SwiftData `@Model`, so instances are reference types that conform
-/// to `Observable`. Because the *same* object is handed to both the list card
-/// and the detail screen, mutating `decisionRaw` in one place is reflected in
-/// the other automatically — this is how "list and detail never disagree"
-/// without any manual refresh.
 @Model
 final class MatchProfile {
-    /// Stable identity from the API's `login.uuid`. Used to de-duplicate across
-    /// pages and to upsert on refresh without clobbering the saved decision.
     @Attribute(.unique) var id: String
 
     var firstName: String
@@ -37,13 +28,10 @@ final class MatchProfile {
     var mediumImageURLString: String
     var largeImageURLString: String
 
-    /// Backing store for `decision`. Persisted as a `String` for schema stability.
     var decisionRaw: String
 
-    /// Preserves the API's paging order so the list renders deterministically.
     var sortIndex: Int
 
-    /// When this profile was first cached — useful for debugging / cache policy.
     var cachedAt: Date
 
     var decision: MatchDecision {

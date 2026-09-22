@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-/// A full-width status bar shown once a decision is made — a clear labelled state
-/// ("Accepted" / "Declined") on a soft tinted background, matching the reference
-/// design's "After Accept / After Decline" states.
 struct DecisionStatusBar: View {
     let decision: MatchDecision
 
@@ -25,12 +22,6 @@ struct DecisionStatusBar: View {
     }
 }
 
-/// Accept / Decline controls. Pending shows two labelled buttons — a neutral
-/// "Decline" and an accent-filled "Accept" — and once a decision is made it's
-/// final, replaced by the full-width status bar.
-///
-/// Reused verbatim by both the list card and the detail screen so the two can
-/// never drift apart visually or behaviorally.
 struct DecisionActionBar: View {
     let decision: MatchDecision
     var prominent: Bool = false

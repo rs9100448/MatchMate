@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-/// Lightweight design tokens so spacing, radius, and semantic colors stay
-/// consistent and are defined in one place.
 enum Theme {
     enum Spacing {
         static let xs: CGFloat = 4

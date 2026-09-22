@@ -8,6 +8,7 @@
 import Foundation
 import Observation
 
+
 @MainActor
 protocol MatchListViewModeling: Observable, AnyObject {
     var state: MatchListState { get }
@@ -23,6 +24,7 @@ protocol MatchListViewModeling: Observable, AnyObject {
     func dismissError()
 }
 
+@Observable
 final class MatchListViewModel: MatchListViewModeling {
     // MARK: - State
     private(set) var state: MatchListState = .idle
@@ -60,8 +62,6 @@ final class MatchListViewModel: MatchListViewModeling {
         await loadFirstPage()
     }
 
-    /// Loads cached profiles so the UI is never blank while the network request is
-    /// in flight (offline-first).
     func loadFromCache() {
         do {
             let cached = try repository.cachedProfiles()
@@ -73,7 +73,6 @@ final class MatchListViewModel: MatchListViewModeling {
         }
     }
 
-    /// Fetches page 1. If offline, falls back to whatever is cached.
     func loadFirstPage() async {
         let cached = state.profiles
 
@@ -98,7 +97,6 @@ final class MatchListViewModel: MatchListViewModeling {
         }
     }
 
-    /// Pull-to-refresh: re-fetch page 1 and reset pagination.
     func refresh() async {
         guard networkMonitor.isConnected else {
             if state.profiles.isEmpty {
@@ -109,8 +107,6 @@ final class MatchListViewModel: MatchListViewModeling {
         await loadFirstPage()
     }
 
-    /// Prefetch trigger: call as each row appears. Loads the next page when the
-    /// user nears the bottom.
     func loadNextPageIfNeeded(currentItem: MatchProfile) async {
         let current = state.profiles
         guard let index = current.firstIndex(where: { $0.id == currentItem.id }) else { return }
@@ -118,8 +114,6 @@ final class MatchListViewModel: MatchListViewModeling {
         await loadNextPage()
     }
 
-    /// Fetches the next page. No-ops while a page is already loading, when there's
-    /// nothing more to load, or when offline.
     func loadNextPage() async {
         guard !state.isPaginating, !state.isLoadingInitial, canLoadMore else { return }
         guard networkMonitor.isConnected else { return }
@@ -131,16 +125,6 @@ final class MatchListViewModel: MatchListViewModeling {
         let previousCount = current.count
         let nextPage = currentPage + 1
 
-        // Run the fetch in an unstructured task so it is NOT tied to the caller's
-        // cancellation. The trigger comes from a list row's `.task`, which SwiftUI
-        // cancels the moment that row scrolls off screen; without this, a quick
-        // scroll would abort the in-flight page load. We still `await` it, so
-        // callers (and tests) observe it through to completion.
-        //
-        // The task inherits this @MainActor context and does the state update
-        // itself, returning `Void`. That keeps the non-Sendable `[MatchProfile]`
-        // entirely inside the actor — nothing crosses the `.value` boundary, so
-        // there's no Sendable warning (`PersistentModel` isn't Sendable).
         await Task {
             do {
                 let merged = try await repository.fetchAndStore(page: nextPage, pageSize: pageSize)
@@ -155,10 +139,6 @@ final class MatchListViewModel: MatchListViewModeling {
     }
 
     // MARK: - Decisions
-
-    /// Records Accept/Decline. The change is written to the DB and, because the
-    /// same `@Model` object is shown here and on the detail screen, both update
-    /// immediately with no manual refresh.
     func setDecision(_ decision: MatchDecision, for profile: MatchProfile) {
         do {
             try repository.setDecision(decision, for: profile)
@@ -167,21 +147,16 @@ final class MatchListViewModel: MatchListViewModeling {
         }
     }
 
-    /// Clears an error, returning to the best non-error state we can.
     func dismissError() {
         guard case let .failed(_, cached) = state else { return }
         state = cached.isEmpty ? .empty : .loaded(cached)
     }
 
     // MARK: - Transitions
-
-    /// Maps a thrown error onto the state machine, preserving any content that was
-    /// already on screen so failures never blank the list.
     private func transitionToFailure(_ error: Error) {
         let appError = AppError.map(error)
         let cached = state.profiles
 
-        // Offline with content already shown is not an error — keep the content.
         if case .offline = appError, !cached.isEmpty {
             state = .loaded(cached)
         } else {

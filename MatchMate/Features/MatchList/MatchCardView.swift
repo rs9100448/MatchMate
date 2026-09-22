@@ -7,13 +7,6 @@
 
 import SwiftUI
 
-/// A single match card: a rounded photo on the left, name / age / location on the
-/// right, and the Accept/Decline controls below (which become a full-width status
-/// bar once decided).
-///
-/// Reads `profile` directly — since `MatchProfile` is an observable `@Model`, any
-/// decision change (made here or on the detail screen) re-renders this card
-/// automatically.
 struct MatchCardView: View {
     let profile: MatchProfile
     let onDecision: (MatchDecision) -> Void
@@ -40,6 +33,10 @@ struct MatchCardView: View {
                         .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
             }
 
             DecisionActionBar(decision: profile.decision, onDecision: onDecision)

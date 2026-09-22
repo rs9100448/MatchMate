@@ -8,14 +8,6 @@
 import Foundation
 import SwiftData
 
-/// Domain-facing persistence boundary.
-///
-/// The ViewModels depend only on this protocol — they never see `URLSession`,
-/// `ModelContext`, or the API DTOs. This keeps UI logic thin and makes the
-/// ViewModels trivially testable with an in-memory or stub repository.
-///
-/// `@MainActor` because it operates on the SwiftData main `ModelContext` and
-/// returns live `@Model` objects that the SwiftUI views bind to directly.
 @MainActor
 protocol ProfileRepository: AnyObject {
     func cachedProfiles() throws -> [MatchProfile]

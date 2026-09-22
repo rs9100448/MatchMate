@@ -8,12 +8,6 @@
 import UIKit
 import CryptoKit
 
-/// Two-tier image cache: an in-memory `NSCache` for instant, flicker-free reuse
-/// while scrolling, plus a small on-disk cache so previously seen photos survive
-/// relaunch and render while offline.
-///
-/// `NSCache` is thread-safe and automatically evicts under memory pressure, which
-/// is exactly what we want for decoded images.
 final class ImageCache: @unchecked Sendable {
     static let shared = ImageCache()
 

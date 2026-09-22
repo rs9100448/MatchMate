@@ -9,9 +9,6 @@ import Foundation
 import SwiftData
 @testable import MatchMate
 
-/// Builds a fully wired, in-memory system under test. Using the *real*
-/// `SwiftDataProfileRepository` against an in-memory store means the tests
-/// exercise the actual persistence + upsert logic, not a fake of it.
 @MainActor
 struct TestEnvironment {
     let container: ModelContainer

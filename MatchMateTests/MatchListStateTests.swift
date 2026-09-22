@@ -9,7 +9,6 @@ import Testing
 import Foundation
 @testable import MatchMate
 
-/// Focused on the state machine transitions themselves.
 @MainActor
 struct MatchListStateTests {
 

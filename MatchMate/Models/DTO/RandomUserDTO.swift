@@ -8,10 +8,7 @@
 import Foundation
 
 /// Wire model for `https://randomuser.me/api`.
-///
-/// These types deliberately mirror the JSON shape and are kept separate from the
-/// `MatchProfile` persistence model. Mapping happens in one place (`asDomain`)
-/// so the rest of the app never depends on the API's structure.
+
 struct RandomUserResponse: Decodable, Sendable {
     let results: [RandomUser]
     let info: Info
@@ -72,11 +69,6 @@ struct RandomUser: Decodable, Sendable {
 // MARK: - Mapping to the domain model
 
 extension RandomUser {
-    /// Maps a decoded API user into a fresh `MatchProfile`.
-    ///
-    /// - Parameter sortIndex: Global paging order, so the list stays stable.
-    /// - Note: A new profile always starts as `.pending`. The repository is
-    ///   responsible for preserving an existing decision on upsert.
     func asDomain(sortIndex: Int) -> MatchProfile {
         MatchProfile(
             id: login.uuid,
@@ -99,11 +91,6 @@ extension RandomUser {
         )
     }
 
-    /// randomuser.me returns registration dates as ISO-8601 with fractional seconds.
-    ///
-    /// `nonisolated(unsafe)` because `ISO8601DateFormatter` isn't `Sendable`, but
-    /// this instance is configured once and then only ever read from (`date(from:)`
-    /// is safe for concurrent parsing), so sharing it is sound.
     nonisolated(unsafe) static let iso8601: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]

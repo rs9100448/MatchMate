@@ -7,10 +7,9 @@
 
 import SwiftUI
 
-/// The match list screen. It's a thin projection of `viewModel.state`: it reads
-/// the state machine and renders the matching branch — no local flags of its own.
 struct MatchListView<ViewModel: MatchListViewModeling>: View {
     @State private var viewModel: ViewModel
+    @State private var path: [MatchProfile] = []
     @Environment(AppDependencies.self) private var dependencies
     @Environment(NetworkMonitor.self) private var networkMonitor
 
@@ -19,7 +18,7 @@ struct MatchListView<ViewModel: MatchListViewModeling>: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             content
                 .navigationTitle("Profile Matches")
                 .navigationDestination(for: MatchProfile.self) { profile in
@@ -63,15 +62,17 @@ struct MatchListView<ViewModel: MatchListViewModeling>: View {
     private func list(_ profiles: [MatchProfile], isPaginating: Bool) -> some View {
         List {
             ForEach(profiles) { profile in
-                NavigationLink(value: profile) {
-                    MatchCardView(profile: profile) { decision in
-                        viewModel.setDecision(decision, for: profile)
-                    }
+                MatchCardView(profile: profile) { decision in
+                    viewModel.setDecision(decision, for: profile)
                 }
-                .listRowInsets(EdgeInsets(top: Theme.Spacing.sm, leading: Theme.Spacing.lg,
-                                          bottom: Theme.Spacing.sm, trailing: Theme.Spacing.lg))
+                .onTapGesture {
+                    path.append(profile)
+                }
+                .listRowInsets(EdgeInsets(top: Theme.Spacing.sm,
+                                          leading: Theme.Spacing.lg,
+                                          bottom: Theme.Spacing.sm,
+                                          trailing: Theme.Spacing.lg))
                 .listRowSeparator(.hidden)
-                .buttonStyle(.plain)
                 .task {
                     await viewModel.loadNextPageIfNeeded(currentItem: profile)
                 }
@@ -86,6 +87,7 @@ struct MatchListView<ViewModel: MatchListViewModeling>: View {
                 .listRowSeparator(.hidden)
             }
         }
+        .scrollIndicators(.hidden)
         .listStyle(.plain)
         .refreshable {
             await viewModel.refresh()

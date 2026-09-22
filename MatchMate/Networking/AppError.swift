@@ -7,10 +7,6 @@
 
 import Foundation
 
-/// A single, user-facing error type the whole app can present.
-///
-/// Lower layers throw specific errors; the repository/ViewModel translate them
-/// into one of these cases so the UI has a stable, friendly surface.
 enum AppError: LocalizedError, Equatable {
     case offline
     case requestFailed(status: Int)
@@ -36,7 +32,6 @@ enum AppError: LocalizedError, Equatable {
         }
     }
 
-    /// Normalizes any thrown error into an `AppError`.
     static func map(_ error: Error) -> AppError {
         if let appError = error as? AppError { return appError }
         if let urlError = error as? URLError {

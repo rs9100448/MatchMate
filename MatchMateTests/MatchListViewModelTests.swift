@@ -54,6 +54,81 @@ struct MatchListViewModelTests {
         #expect(env.api.requestedPages == [1, 2])
     }
 
+    @Test("onAppear loads the first page, and is a no-op once past idle")
+    func onAppearLoadsThenGuards() async {
+        let env = TestEnvironment(pageSize: 10)
+
+        await env.listViewModel.onAppear()
+        #expect(env.listViewModel.profiles.count == 10)
+        #expect(env.api.requestedPages == [1])
+
+        // Second call is guarded by `case .idle` — no extra fetch.
+        await env.listViewModel.onAppear()
+        #expect(env.api.requestedPages == [1])
+    }
+
+    @Test("loadFromCache surfaces persisted profiles without touching the network")
+    func loadFromCacheShowsCachedProfiles() async {
+        // Seed the store through one view model…
+        let env = TestEnvironment(pageSize: 10)
+        await env.listViewModel.loadFirstPage()
+
+        // …then a fresh view model on the same store shows them via cache only.
+        let cachedFirst = MatchListViewModel(
+            repository: env.repository,
+            networkMonitor: env.network,
+            pageSize: 10
+        )
+        cachedFirst.loadFromCache()
+
+        #expect(cachedFirst.profiles.count == 10)
+        #expect(cachedFirst.errorMessage == nil)
+    }
+
+    @Test("loadNextPage stops paging once a page adds nothing new")
+    func paginationStopsWhenExhausted() async {
+        let env = TestEnvironment(pageSize: 10)
+        await env.listViewModel.loadFirstPage() // page 1 → ids user-1-0…user-1-9
+
+        // Page 2 returns the SAME ids → upsert updates in place, count doesn't
+        // grow → `canLoadMore` becomes false.
+        env.api.stubbedPages[2] = (0..<10).map { MockProfileAPI.makeUser(id: "user-1-\($0)") }
+        await env.listViewModel.loadNextPage()
+        #expect(env.listViewModel.profiles.count == 10)
+        #expect(env.api.requestedPages == [1, 2])
+
+        // Paging is now exhausted — a further attempt doesn't hit the network.
+        await env.listViewModel.loadNextPage()
+        #expect(env.api.requestedPages == [1, 2])
+    }
+
+    @Test("loadNextPage does nothing while offline")
+    func paginationNoOpOffline() async {
+        let env = TestEnvironment(pageSize: 10)
+        await env.listViewModel.loadFirstPage()
+        env.network.isConnected = false
+
+        await env.listViewModel.loadNextPage()
+
+        #expect(env.api.requestedPages == [1]) // page 2 never requested
+        #expect(env.listViewModel.profiles.count == 10)
+    }
+
+    @Test("Concurrent loadNextPage calls fetch the next page only once")
+    func paginationCoalescesConcurrent() async {
+        let env = TestEnvironment(pageSize: 10)
+        await env.listViewModel.loadFirstPage()
+
+        // The first call flips state to `.paginating` before suspending; the
+        // second sees that and no-ops via the `!state.isPaginating` guard.
+        async let first: Void = env.listViewModel.loadNextPage()
+        async let second: Void = env.listViewModel.loadNextPage()
+        _ = await (first, second)
+
+        #expect(env.api.requestedPages == [1, 2]) // page 2 requested exactly once
+        #expect(env.listViewModel.profiles.count == 20)
+    }
+
     // MARK: - Decisions & persistence
 
     @Test("Accepting a profile persists and survives a reload from the store")

@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-/// Full profile screen. Accept/Decline here writes to the DB and updates this
-/// screen instantly; the list card reflects the same status on back because both
-/// read the same `MatchProfile` object.
 struct MatchDetailView<ViewModel: MatchDetailViewModeling>: View {
     @State private var viewModel: ViewModel
 
@@ -28,6 +25,7 @@ struct MatchDetailView<ViewModel: MatchDetailViewModeling>: View {
             }
             .padding(Theme.Spacing.lg)
         }
+        .scrollIndicators(.hidden)
         .navigationTitle(profile.fullName)
         .navigationBarTitleDisplayMode(.inline)
         .alert("Couldn't save", isPresented: errorBinding) {

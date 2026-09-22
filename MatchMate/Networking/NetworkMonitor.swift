@@ -8,18 +8,11 @@
 import Foundation
 import Network
 
-/// Observable connectivity source. The list ViewModel reads `isConnected` to
-/// decide whether to attempt a fetch and whether to show the offline banner.
 @MainActor
 protocol NetworkMonitoring: AnyObject {
     var isConnected: Bool { get }
 }
 
-/// `NWPathMonitor`-backed monitor.
-///
-/// Marked `@MainActor` + `@Observable` so SwiftUI can bind to `isConnected`
-/// directly and updates are delivered on the main actor.
-@MainActor
 @Observable
 final class NetworkMonitor: NetworkMonitoring {
     private(set) var isConnected: Bool = true

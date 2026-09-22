@@ -7,14 +7,10 @@
 
 import Foundation
 
-/// Minimal transport abstraction so the API service can be unit-tested without
-/// hitting the network. Production uses `URLSessionHTTPClient`; tests inject a
-/// stub that returns canned `Data`.
 protocol HTTPClient: Sendable {
     func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse)
 }
 
-/// `URLSession`-backed implementation using `async/await`.
 struct URLSessionHTTPClient: HTTPClient {
     private let session: URLSession
 

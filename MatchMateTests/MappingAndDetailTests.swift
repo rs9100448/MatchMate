@@ -25,24 +25,7 @@ struct MappingAndDetailTests {
         #expect(profile.largeImageURLString == user.picture.large)
     }
 
-    @Test("Detail view model writes decisions through the repository")
-    func detailWritesDecision() async throws {
-        let env = TestEnvironment(pageSize: 10)
-        await env.listViewModel.loadFirstPage()
-        let profile = try #require(env.listViewModel.profiles.first)
-
-        let detailVM = env.makeDetailViewModel(for: profile)
-        detailVM.setDecision(.declined)
-        #expect(detailVM.decision == .declined)
-
-        // The data layer supports any transition, even though the UI keeps a
-        // decision final once made.
-        detailVM.setDecision(.pending)
-        #expect(detailVM.decision == .pending)
-
-        let reloaded = try env.repository.cachedProfiles()
-        #expect(reloaded.first { $0.id == profile.id }?.decision == .pending)
-    }
+    // Detail view-model behavior lives in MatchDetailViewModelTests.
 
     @Test("URLError is normalized to the offline case")
     func mapsURLErrorToOffline() {

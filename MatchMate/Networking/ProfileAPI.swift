@@ -11,10 +11,6 @@ protocol ProfileAPI: Sendable {
     func fetchProfiles(page: Int, pageSize: Int) async throws -> [RandomUser]
 }
 
-/// Concrete `randomuser.me` implementation.
-///
-/// The `seed` is fixed to `matchmate` so paging stays stable across the review,
-/// exactly as the assignment requires.
 struct RandomUserAPI: ProfileAPI {
     private let client: HTTPClient
     private let baseURL: URL

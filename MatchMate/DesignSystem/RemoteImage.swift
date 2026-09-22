@@ -8,9 +8,6 @@
 import SwiftUI
 import UIKit
 
-/// Loads a remote image through `ImageCache` (NSCache in memory + a small disk
-/// cache), so scrolling is flicker-free and previously seen photos render even
-/// when offline. Shows a placeholder while loading and on failure.
 struct RemoteImage: View {
     let url: URL?
     var contentMode: ContentMode = .fill

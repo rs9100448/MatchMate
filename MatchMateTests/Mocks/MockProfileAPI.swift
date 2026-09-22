@@ -8,16 +8,9 @@
 import Foundation
 @testable import MatchMate
 
-/// Deterministic stand-in for the real API. Generates stable, page-addressable
-/// users so pagination and upsert behavior can be asserted precisely.
 final class MockProfileAPI: ProfileAPI, @unchecked Sendable {
-    /// If set, the next fetch throws this instead of returning users.
     var errorToThrow: Error?
-
-    /// Overrides the generated users for a specific page when provided.
     var stubbedPages: [Int: [RandomUser]] = [:]
-
-    /// Records every page that was requested, in order.
     private(set) var requestedPages: [Int] = []
 
     func fetchProfiles(page: Int, pageSize: Int) async throws -> [RandomUser] {
