@@ -38,7 +38,6 @@ final class MatchListViewModel: MatchListViewModeling {
     private let pageSize: Int
 
     // Pagination bookkeeping (not display state).
-    private var currentPage = 0
     private var canLoadMore = true
 
     /// How close to the end of the list we get before prefetching the next page.
@@ -89,7 +88,6 @@ final class MatchListViewModel: MatchListViewModeling {
 
         do {
             let merged = try await repository.fetchAndStore(page: 1, pageSize: pageSize)
-            currentPage = 1
             canLoadMore = true
             state = merged.isEmpty ? .empty : .loaded(merged)
         } catch {
@@ -123,12 +121,11 @@ final class MatchListViewModel: MatchListViewModeling {
 
         state = .paginating(current)
         let previousCount = current.count
-        let nextPage = currentPage + 1
+        let nextPage = current.count / pageSize + 1
 
         await Task {
             do {
                 let merged = try await repository.fetchAndStore(page: nextPage, pageSize: pageSize)
-                currentPage = nextPage
                 // If the page brought nothing new, stop paginating.
                 canLoadMore = merged.count > previousCount
                 state = merged.isEmpty ? .empty : .loaded(merged)

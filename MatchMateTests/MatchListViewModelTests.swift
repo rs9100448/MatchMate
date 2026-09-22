@@ -102,6 +102,22 @@ struct MatchListViewModelTests {
         #expect(env.api.requestedPages == [1, 2])
     }
 
+    @Test("Pagination continues after a pull-to-refresh (does not stall)")
+    func paginationContinuesAfterRefresh() async {
+        let env = TestEnvironment(pageSize: 10)
+        await env.listViewModel.loadFirstPage()
+        await env.listViewModel.loadNextPage()
+        await env.listViewModel.loadNextPage()
+        #expect(env.listViewModel.profiles.count == 30)
+
+        await env.listViewModel.refresh()
+        #expect(env.listViewModel.profiles.count == 30)
+
+        await env.listViewModel.loadNextPage()
+        #expect(env.listViewModel.profiles.count == 40)
+        #expect(env.api.requestedPages == [1, 2, 3, 1, 4])
+    }
+
     @Test("loadNextPage does nothing while offline")
     func paginationNoOpOffline() async {
         let env = TestEnvironment(pageSize: 10)
