@@ -14,6 +14,8 @@ protocol ProfileRepository: AnyObject {
     @discardableResult
     func fetchAndStore(page: Int, pageSize: Int) async throws -> [MatchProfile]
     func setDecision(_ decision: MatchDecision, for profile: MatchProfile) throws
+    func savedProfiles() throws -> [MatchProfile]
+    func setSaved(_ saved: Bool, for profile: MatchProfile) throws
 }
 
 final class SwiftDataProfileRepository: ProfileRepository {
@@ -30,6 +32,18 @@ final class SwiftDataProfileRepository: ProfileRepository {
     func cachedProfiles() throws -> [MatchProfile] {
         let descriptor = FetchDescriptor<MatchProfile>(
             sortBy: [SortDescriptor(\.sortIndex, order: .forward)]
+        )
+        do {
+            return try context.fetch(descriptor)
+        } catch {
+            throw AppError.persistence(error.localizedDescription)
+        }
+    }
+
+    func savedProfiles() throws -> [MatchProfile] {
+        let descriptor = FetchDescriptor<MatchProfile>(
+            predicate: #Predicate { $0.isSaved },
+            sortBy: [SortDescriptor(\.savedAt, order: .reverse)]
         )
         do {
             return try context.fetch(descriptor)
@@ -96,6 +110,17 @@ final class SwiftDataProfileRepository: ProfileRepository {
 
     func setDecision(_ decision: MatchDecision, for profile: MatchProfile) throws {
         profile.decision = decision
+        // A decided profile leaves the "save for later" shortlist automatically.
+        if decision == .accepted || decision == .declined {
+            profile.isSaved = false
+            profile.savedAt = nil
+        }
+        try save()
+    }
+
+    func setSaved(_ saved: Bool, for profile: MatchProfile) throws {
+        profile.isSaved = saved
+        profile.savedAt = saved ? .now : nil
         try save()
     }
 

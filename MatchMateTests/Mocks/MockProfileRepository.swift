@@ -28,5 +28,21 @@ final class MockProfileRepository: ProfileRepository {
     func setDecision(_ decision: MatchDecision, for profile: MatchProfile) throws {
         if let setDecisionError { throw setDecisionError }
         profile.decision = decision
+        if decision == .accepted || decision == .declined {
+            profile.isSaved = false
+            profile.savedAt = nil
+        }
+    }
+
+    func savedProfiles() throws -> [MatchProfile] {
+        if let fetchError { throw fetchError }
+        return cached
+            .filter { $0.isSaved }
+            .sorted { ($0.savedAt ?? .distantPast) > ($1.savedAt ?? .distantPast) }
+    }
+
+    func setSaved(_ saved: Bool, for profile: MatchProfile) throws {
+        profile.isSaved = saved
+        profile.savedAt = saved ? .now : nil
     }
 }
