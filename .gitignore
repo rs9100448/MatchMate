@@ -27,3 +27,6 @@ xcuserdata/
 
 # User-specific Xcode state (keep shared schemes)
 *.xcuserstate
+
+# Agentic feature-pipeline scaffold (duplicate of .claude/ + CLAUDE.md)
+agentic-feature-workflow/
