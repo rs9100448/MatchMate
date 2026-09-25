@@ -30,6 +30,9 @@ final class MatchProfile {
 
     var decisionRaw: String
 
+    var isSaved: Bool = false
+    var savedAt: Date? = nil
+
     var sortIndex: Int
 
     var cachedAt: Date
@@ -56,6 +59,8 @@ final class MatchProfile {
         mediumImageURLString: String,
         largeImageURLString: String,
         decision: MatchDecision = .pending,
+        isSaved: Bool = false,
+        savedAt: Date? = nil,
         sortIndex: Int = 0,
         cachedAt: Date = .now
     ) {
@@ -75,6 +80,8 @@ final class MatchProfile {
         self.mediumImageURLString = mediumImageURLString
         self.largeImageURLString = largeImageURLString
         self.decisionRaw = decision.rawValue
+        self.isSaved = isSaved
+        self.savedAt = savedAt
         self.sortIndex = sortIndex
         self.cachedAt = cachedAt
     }
