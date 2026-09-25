@@ -34,4 +34,8 @@ final class AppDependencies {
     func makeMatchDetailViewModel(for profile: MatchProfile) -> some MatchDetailViewModeling {
         MatchDetailViewModel(profile: profile, repository: repository)
     }
+
+    func makeSavedListViewModel() -> some SavedListViewModeling {
+        SavedListViewModel(repository: repository)
+    }
 }
