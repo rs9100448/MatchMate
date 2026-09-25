@@ -14,7 +14,7 @@ struct MatchMateApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MatchListView(viewModel: dependencies.makeMatchListViewModel())
+            RootTabView(dependencies: dependencies)
                 .environment(dependencies)
                 .environment(dependencies.networkMonitor)
         }
