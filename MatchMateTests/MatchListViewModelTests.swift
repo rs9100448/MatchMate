@@ -196,6 +196,22 @@ struct MatchListViewModelTests {
         #expect(detailVM.decision == .accepted)
     }
 
+    @Test("toggleSave flips a profile's saved state and reflects it in the store")
+    func toggleSaveFlipsSavedState() async throws {
+        let env = TestEnvironment(pageSize: 10)
+        await env.listViewModel.loadFirstPage()
+        let target = try #require(env.listViewModel.profiles.first)
+        #expect(target.isSaved == false)
+
+        env.listViewModel.toggleSave(for: target)
+        #expect(target.isSaved == true)
+        #expect(try env.repository.savedProfiles().contains { $0.id == target.id })
+
+        env.listViewModel.toggleSave(for: target)
+        #expect(target.isSaved == false)
+        #expect(try env.repository.savedProfiles().isEmpty)
+    }
+
     // MARK: - Offline & errors
 
     @Test("Offline with empty cache surfaces an offline message")
