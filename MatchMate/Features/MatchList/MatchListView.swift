@@ -62,9 +62,11 @@ struct MatchListView<ViewModel: MatchListViewModeling>: View {
     private func list(_ profiles: [MatchProfile], isPaginating: Bool) -> some View {
         List {
             ForEach(profiles) { profile in
-                MatchCardView(profile: profile) { decision in
-                    viewModel.setDecision(decision, for: profile)
-                }
+                MatchCardView(
+                    profile: profile,
+                    onDecision: { viewModel.setDecision($0, for: profile) },
+                    onToggleSave: { viewModel.toggleSave(for: profile) }
+                )
                 .onTapGesture {
                     path.append(profile)
                 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct MatchCardView: View {
     let profile: MatchProfile
     let onDecision: (MatchDecision) -> Void
+    let onToggleSave: () -> Void
 
     var body: some View {
         VStack(spacing: Theme.Spacing.lg) {
@@ -47,5 +48,14 @@ struct MatchCardView: View {
             in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
         )
         .contentShape(Rectangle())
+        .contextMenu {
+            Button(action: onToggleSave) {
+                if profile.isSaved {
+                    Label("Unsave", systemImage: "bookmark.slash")
+                } else {
+                    Label("Save for later", systemImage: "bookmark")
+                }
+            }
+        }
     }
 }

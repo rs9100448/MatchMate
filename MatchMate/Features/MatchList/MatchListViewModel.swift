@@ -21,6 +21,7 @@ protocol MatchListViewModeling: Observable, AnyObject {
     func loadNextPageIfNeeded(currentItem: MatchProfile) async
     func loadNextPage() async
     func setDecision(_ decision: MatchDecision, for profile: MatchProfile)
+    func toggleSave(for profile: MatchProfile)
     func dismissError()
 }
 
@@ -139,6 +140,14 @@ final class MatchListViewModel: MatchListViewModeling {
     func setDecision(_ decision: MatchDecision, for profile: MatchProfile) {
         do {
             try repository.setDecision(decision, for: profile)
+        } catch {
+            transitionToFailure(error)
+        }
+    }
+
+    func toggleSave(for profile: MatchProfile) {
+        do {
+            try repository.setSaved(!profile.isSaved, for: profile)
         } catch {
             transitionToFailure(error)
         }
