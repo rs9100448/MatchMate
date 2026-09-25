@@ -13,6 +13,7 @@ final class MockProfileRepository: ProfileRepository {
     var cached: [MatchProfile] = []
     var fetchError: Error?
     var setDecisionError: Error?
+    var setSavedError: Error?
 
     func cachedProfiles() throws -> [MatchProfile] {
         if let fetchError { throw fetchError }
@@ -42,6 +43,7 @@ final class MockProfileRepository: ProfileRepository {
     }
 
     func setSaved(_ saved: Bool, for profile: MatchProfile) throws {
+        if let setSavedError { throw setSavedError }
         profile.isSaved = saved
         profile.savedAt = saved ? .now : nil
     }

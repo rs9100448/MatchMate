@@ -42,11 +42,12 @@ final class SwiftDataProfileRepository: ProfileRepository {
 
     func savedProfiles() throws -> [MatchProfile] {
         let descriptor = FetchDescriptor<MatchProfile>(
-            predicate: #Predicate { $0.isSaved },
-            sortBy: [SortDescriptor(\.savedAt, order: .reverse)]
+            predicate: #Predicate { $0.isSaved == true }
         )
         do {
+            // Sort in memory: SwiftData cannot sort on the optional `savedAt` keypath.
             return try context.fetch(descriptor)
+                .sorted { ($0.savedAt ?? .distantPast) > ($1.savedAt ?? .distantPast) }
         } catch {
             throw AppError.persistence(error.localizedDescription)
         }
